@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서울 따릉이 대여소 현황</title>
+  <style>
+    /* CSS Variables & Global Styles */
+    :root {
+      --primary: #00a86b;
+      --primary-hover: #008f5a;
+      --primary-light: #e6f7f0;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --danger-border: #fca5a5;
+      --warning: #f59e0b;
+      --warning-light: #fffbe3;
+      --bg-main: #f8fafc;
+      --surface: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .logo-text h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
+    .logo-text p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* Badges */
+    .data-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .data-badge.live {
+      background-color: var(--primary-light);
+      color: var(--primary-hover);
+      border: 1px solid rgba(0, 168, 107, 0.3);
+    }
+
+    .data-badge.sample {
+      background-color: var(--warning-light);
+      color: #b45309;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .data-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .data-badge.live .dot {
+      background-color: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+    }
+
+    .data-badge.sample .dot {
+      background-color: var(--warning);
+    }
+
+    .refresh-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 2px 4px rgba(0, 168, 107, 0.2);
+    }
+
+    .refresh-btn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .refresh-btn:active {
+      transform: translateY(0);
+    }
+
+    .refresh-btn svg.spin {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      flex: 1;
+    }
+
+    /* Stat Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .stat-card .label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .stat-card .value-group {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .stat-card .value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .stat-card.empty-alert .value {
+      color: var(--danger);
+    }
+
+    /* Filter & Search Bar */
+    .controls-card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.625rem 1rem 0.625rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition);
+      background-color: var(--bg-main);
+    }
+
+    .search-box input:focus {
+      background-color: var(--surface);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 168, 107, 0.15);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      display: none;
+      padding: 0.2rem;
+    }
+
+    .clear-btn.active {
+      display: block;
+    }
+
+    .filter-options {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-tabs {
+      display: inline-flex;
+      background: var(--bg-main);
+      padding: 0.25rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 0.4rem 0.875rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: calc(var(--radius-sm) - 2px);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sort-select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      color: var(--text-main);
+      background-color: var(--surface);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .view-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .view-btn {
+      padding: 0.45rem 0.75rem;
+      border: none;
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .view-btn.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* Grid Layout for Station Cards */
+    .stations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    /* Station Card Component */
+    .station-card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .station-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Highlight Zero Bike Stations in Red */
+    .station-card.is-empty {
+      background-color: var(--danger-light);
+      border-color: var(--danger-border);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+    }
+
+    .station-card.is-empty::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background-color: var(--danger);
+    }
+
+    .station-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .station-info {
+      flex: 1;
+    }
+
+    .station-id {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .station-card.is-empty .station-id {
+      color: var(--danger);
+    }
+
+    .station-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.3;
+      word-break: keep-all;
+    }
+
+    .status-chip {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+
+    .status-chip.available {
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .status-chip.empty {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .bike-count-area {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .count-number {
+      font-size: 2.25rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .station-card.is-empty .count-number {
+      color: var(--danger);
+    }
+
+    .station-card:not(.is-empty) .count-number {
+      color: var(--primary);
+    }
+
+    .count-unit {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Progress & Metrics */
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background-color: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 0.875rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    .progress-bar-fill.normal {
+      background-color: var(--primary);
+    }
+
+    .progress-bar-fill.empty {
+      background-color: var(--danger);
+    }
+
+    .metrics-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px dashed var(--border);
+      padding-top: 0.75rem;
+    }
+
+    .station-card.is-empty .metrics-row {
+      border-top-color: rgba(239, 68, 68, 0.2);
+    }
+
+    /* Table View Styling */
+    .table-container {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      box-shadow: var(--shadow-sm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: var(--bg-main);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr.is-empty-row {
+      background-color: var(--danger-light);
+    }
+
+    tr.is-empty-row td {
+      color: var(--danger);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1.5rem;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--border);
+      grid-column: 1 / -1;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.6;
+    }
+
+    .empty-state h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .empty-state p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .reset-btn {
+      padding: 0.5rem 1rem;
+      background: var(--bg-main);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .reset-btn:hover {
+      background: var(--border);
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 1.25rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+
+    /* Utility */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .controls-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-options {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .filter-tabs {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .tab-btn {
+        flex: 1;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="logo-area">
+        <div class="logo-icon">🚲</div>
+        <div class="logo-text">
+          <h1>서울 따릉이 대여소 현황</h1>
+          <p>실시간 따릉이 거치 정보 모니터링</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Live vs Sample Data Badge -->
+        <div id="dataBadge" class="data-badge sample">
+          <span class="dot"></span>
+          <span id="badgeText">샘플 데이터</span>
+        </div>
+
+        <!-- Refresh Button -->
+        <button id="refreshBtn" class="refresh-btn">
+          <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          <span>새로고침</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Top Summary Dashboard -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span class="label">총 대여소</span>
+        <div class="value-group">
+          <span class="value" id="statTotalStations">0</span>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">개소</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="label">대여 가능 자전거 총합</span>
+        <div class="value-group">
+          <span class="value" style="color: var(--primary);" id="statTotalBikes">0</span>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">대</span>
+        </div>
+      </div>
+      <div class="stat-card empty-alert">
+        <span class="label">대여 불가 (0대 대여소)</span>
+        <div class="value-group">
+          <span class="value" id="statEmptyStations">0</span>
+          <span style="font-size: 0.85rem; color: var(--danger);">개소</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="label">평균 거치율</span>
+        <div class="value-group">
+          <span class="value" id="statAvgShared">0%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Search & Filter Controls -->
+    <section class="controls-card">
+      <div class="search-box">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="대여소 이름 또는 번호 검색 (예: 합정역, 102)..." autocomplete="off">
+        <button id="clearSearchBtn" class="clear-btn">✕</button>
+      </div>
+
+      <div class="filter-options">
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+          <button class="tab-btn active" data-filter="all">전체</button>
+          <button class="tab-btn" data-filter="available">대여 가능만</button>
+          <button class="tab-btn" data-filter="empty">대여 불가 (0대)</button>
+        </div>
+
+        <!-- Sort Selection -->
+        <select id="sortSelect" class="sort-select">
+          <option value="name">이름순 (번호순)</option>
+          <option value="bikes-desc">자전거 많은순</option>
+          <option value="bikes-asc">자전거 적은순</option>
+          <option value="shared-desc">거치율 높은순</option>
+        </select>
+
+        <!-- View Switcher -->
+        <div class="view-toggle">
+          <button id="viewGridBtn" class="view-btn active" title="카드형 뷰">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </button>
+          <button id="viewTableBtn" class="view-btn" title="리스트형 뷰">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content List Container -->
+    <section>
+      <!-- Grid View -->
+      <div id="stationsGrid" class="stations-grid"></div>
+
+      <!-- Table View -->
+      <div id="stationsTableWrapper" class="table-container hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>대여소 ID / 이름</th>
+              <th>대여 가능 자전거</th>
+              <th>총 거치대 수</th>
+              <th>거치율 (%)</th>
+              <th>상태</th>
+            </tr>
+          </thead>
+          <tbody id="stationsTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Empty Result State -->
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-state-icon">🔍</div>
+        <h3>검색 결과가 없습니다</h3>
+        <p>검색어나 필터를 변경하여 다시 확인해보세요.</p>
+        <button id="resetFiltersBtn" class="reset-btn">필터 초기화</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>서울시 공공자전거(따릉이) 대여소 정보 시스템 | 마지막 갱신: <span id="lastUpdatedText">-</span></p>
+  </footer>
+
+  <!-- Inline Script Logic -->
+  <script>
+    // System Sample Data (Fallback when API fetch fails)
+    const SAMPLE_DATA = [
+      {
+        "rentBikeStatus": {
+          "list_total_count": 5,
+          "RESULT": {
+            "CODE": "INFO-000",
+            "MESSAGE": "정상 처리되었습니다."
+          },
+          "row": [
+            {
+              "rackTotCnt": "15",
+              "stationName": "102. 망원역 1번출구 앞",
+              "parkingBikeTotCnt": "11",
+              "shared": "73",
+              "stationLatitude": "37.55564880",
+              "stationLongitude": "126.91062927",
+              "stationId": "ST-4"
+            },
+            {
+              "rackTotCnt": "14",
+              "stationName": "103. 망원역 2번출구 앞",
+              "parkingBikeTotCnt": "12",
+              "shared": "86",
+              "stationLatitude": "37.55495071",
+              "stationLongitude": "126.91083527",
+              "stationId": "ST-5"
+            },
+            {
+              "rackTotCnt": "13",
+              "stationName": "104. 합정역 1번출구 앞",
+              "parkingBikeTotCnt": "16",
+              "shared": "123",
+              "stationLatitude": "37.55073929",
+              "stationLongitude": "126.91508484",
+              "stationId": "ST-6"
+            },
+            {
+              "rackTotCnt": "5",
+              "stationName": "105. 합정역 5번출구 앞",
+              "parkingBikeTotCnt": "0",
+              "shared": "0",
+              "stationLatitude": "37.55000687",
+              "stationLongitude": "126.91482544",
+              "stationId": "ST-7"
+            },
+            {
+              "rackTotCnt": "12",
+              "stationName": "106. 합정역 7번출구 앞",
+              "parkingBikeTotCnt": "1",
+              "shared": "8",
+              "stationLatitude": "37.54864502",
+              "stationLongitude": "126.91282654",
+              "stationId": "ST-8"
+            }
+          ]
+        }
+      }
+    ];
+
+    // Global State Application Object
+    const state = {
+      rawStations: [],
+      filteredStations: [],
+      isSample: false,
+      lastUpdated: null,
+      currentFilter: 'all', // 'all', 'available', 'empty'
+      currentSort: 'name',   // 'name', 'bikes-desc', 'bikes-asc', 'shared-desc'
+      searchQuery: '',
+      currentView: 'grid'   // 'grid', 'table'
+    };
+
+    // DOM Elements
+    const elements = {
+      refreshBtn: document.getElementById('refreshBtn'),
+      refreshIcon: document.getElementById('refreshIcon'),
+      dataBadge: document.getElementById('dataBadge'),
+      badgeText: document.getElementById('badgeText'),
+      lastUpdatedText: document.getElementById('lastUpdatedText'),
+      
+      statTotalStations: document.getElementById('statTotalStations'),
+      statTotalBikes: document.getElementById('statTotalBikes'),
+      statEmptyStations: document.getElementById('statEmptyStations'),
+      statAvgShared: document.getElementById('statAvgShared'),
+
+      searchInput: document.getElementById('searchInput'),
+      clearSearchBtn: document.getElementById('clearSearchBtn'),
+      tabBtns: document.querySelectorAll('.tab-btn'),
+      sortSelect: document.getElementById('sortSelect'),
+      viewGridBtn: document.getElementById('viewGridBtn'),
+      viewTableBtn: document.getElementById('viewTableBtn'),
+      
+      stationsGrid: document.getElementById('stationsGrid'),
+      stationsTableWrapper: document.getElementById('stationsTableWrapper'),
+      stationsTableBody: document.getElementById('stationsTableBody'),
+      emptyState: document.getElementById('emptyState'),
+      resetFiltersBtn: document.getElementById('resetFiltersBtn')
+    };
+
+    // Initialization Function
+    function init() {
+      setupEventListeners();
+      fetchBikeData();
+    }
+
+    // Setup Event Listeners
+    function setupEventListeners() {
+      // Refresh Button
+      elements.refreshBtn.addEventListener('click', () => {
+        fetchBikeData();
+      });
+
+      // Search Input
+      elements.searchInput.addEventListener('input', (e) => {
+        state.searchQuery = e.target.value.trim();
+        elements.clearSearchBtn.classList.toggle('active', state.searchQuery.length > 0);
+        applyFiltersAndRender();
+      });
+
+      // Clear Search
+      elements.clearSearchBtn.addEventListener('click', () => {
+        elements.searchInput.value = '';
+        state.searchQuery = '';
+        elements.clearSearchBtn.classList.remove('active');
+        applyFiltersAndRender();
+      });
+
+      // Tab Filters
+      elements.tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          elements.tabBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.currentFilter = btn.getAttribute('data-filter');
+          applyFiltersAndRender();
+        });
+      });
+
+      // Sorting Dropdown
+      elements.sortSelect.addEventListener('change', (e) => {
+        state.currentSort = e.target.value;
+        applyFiltersAndRender();
+      });
+
+      // View Toggle
+      elements.viewGridBtn.addEventListener('click', () => {
+        state.currentView = 'grid';
+        elements.viewGridBtn.classList.add('active');
+        elements.viewTableBtn.classList.remove('active');
+        elements.stationsGrid.classList.remove('hidden');
+        elements.stationsTableWrapper.classList.add('hidden');
+      });
+
+      elements.viewTableBtn.addEventListener('click', () => {
+        state.currentView = 'table';
+        elements.viewTableBtn.classList.add('active');
+        elements.viewGridBtn.classList.remove('active');
+        elements.stationsGrid.classList.add('hidden');
+        elements.stationsTableWrapper.classList.remove('hidden');
+      });
+
+      // Reset Filters
+      elements.resetFiltersBtn.addEventListener('click', () => {
+        state.searchQuery = '';
+        state.currentFilter = 'all';
+        state.currentSort = 'name';
+        
+        elements.searchInput.value = '';
+        elements.clearSearchBtn.classList.remove('active');
+        elements.sortSelect.value = 'name';
+        
+        elements.tabBtns.forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-filter') === 'all');
+        });
+
+        applyFiltersAndRender();
+      });
+    }
+
+    // Main Data Fetching Logic with Fallback Handling
+    async function fetchBikeData() {
+      // Start spin animation
+      elements.refreshIcon.classList.add('spin');
+      elements.refreshBtn.disabled = true;
+
+      let rawData = null;
+      let isSample = false;
+
+      try {
+        const response = await fetch('/api/bike');
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+        rawData = await response.json();
+      } catch (error) {
+        console.warn('API 호출 실패. 샘플 데이터로 전환합니다.', error);
+        rawData = SAMPLE_DATA;
+        isSample = true;
+      }
+
+      // Process and Parse JSON data
+      state.isSample = isSample;
+      state.rawStations = parseResponseData(rawData);
+      state.lastUpdated = new Date();
+
+      // Update Header UI & Badge
+      updateBadgeUI();
+      updateDashboardStats();
+      applyFiltersAndRender();
+
+      // Stop spin animation
+      setTimeout(() => {
+        elements.refreshIcon.classList.remove('spin');
+        elements.refreshBtn.disabled = false;
+      }, 400);
+    }
+
+    // Safely parse JSON structure and convert string properties to Numbers
+    function parseResponseData(data) {
+      let rowArray = [];
+
+      // Flexible checking for API or Sample format
+      if (Array.isArray(data) && data[0] && data[0].rentBikeStatus && Array.isArray(data[0].rentBikeStatus.row)) {
+        rowArray = data[0].rentBikeStatus.row;
+      } else if (data && data.rentBikeStatus && Array.isArray(data.rentBikeStatus.row)) {
+        rowArray = data.rentBikeStatus.row;
+      }
+
+      return rowArray.map(item => {
+        const parkingBikeTotCnt = parseInt(item.parkingBikeTotCnt, 10) || 0;
+        const rackTotCnt = parseInt(item.rackTotCnt, 10) || 0;
+        const shared = parseInt(item.shared, 10) || 0;
+
+        return {
+          stationId: item.stationId || '',
+          stationName: item.stationName || '미지정 대여소',
+          parkingBikeTotCnt: parkingBikeTotCnt,
+          rackTotCnt: rackTotCnt,
+          shared: shared,
+          stationLatitude: item.stationLatitude || null,
+          stationLongitude: item.stationLongitude || null
+        };
+      });
+    }
+
+    // Update Header Status Badge & Time
+    function updateBadgeUI() {
+      if (state.isSample) {
+        elements.dataBadge.className = 'data-badge sample';
+        elements.badgeText.textContent = '샘플 데이터';
+      } else {
+        elements.dataBadge.className = 'data-badge live';
+        elements.badgeText.textContent = '실시간 API';
+      }
+
+      const formattedTime = formatDate(state.lastUpdated);
+      elements.lastUpdatedText.textContent = formattedTime;
+    }
+
+    // Format Date Utility
+    function formatDate(date) {
+      if (!date) return '-';
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Calculate Summary Stats
+    function updateDashboardStats() {
+      const totalStations = state.rawStations.length;
+      let totalBikes = 0;
+      let emptyStationsCount = 0;
+      let sumShared = 0;
+
+      state.rawStations.forEach(s => {
+        totalBikes += s.parkingBikeTotCnt;
+        if (s.parkingBikeTotCnt === 0) {
+          emptyStationsCount++;
+        }
+        sumShared += s.shared;
+      });
+
+      const avgShared = totalStations > 0 ? Math.round(sumShared / totalStations) : 0;
+
+      elements.statTotalStations.textContent = totalStations.toLocaleString();
+      elements.statTotalBikes.textContent = totalBikes.toLocaleString();
+      elements.statEmptyStations.textContent = emptyStationsCount.toLocaleString();
+      elements.statAvgShared.textContent = `${avgShared}%`;
+    }
+
+    // Filter & Sort Logic
+    function applyFiltersAndRender() {
+      let list = [...state.rawStations];
+
+      // 1. Text Search Filter
+      if (state.searchQuery) {
+        const query = state.searchQuery.toLowerCase();
+        list = list.filter(item => item.stationName.toLowerCase().includes(query));
+      }
+
+      // 2. Tab Filter
+      if (state.currentFilter === 'available') {
+        list = list.filter(item => item.parkingBikeTotCnt > 0);
+      } else if (state.currentFilter === 'empty') {
+        list = list.filter(item => item.parkingBikeTotCnt === 0);
+      }
+
+      // 3. Sorting Logic
+      list.sort((a, b) => {
+        if (state.currentSort === 'bikes-desc') {
+          return b.parkingBikeTotCnt - a.parkingBikeTotCnt;
+        } else if (state.currentSort === 'bikes-asc') {
+          return a.parkingBikeTotCnt - b.parkingBikeTotCnt;
+        } else if (state.currentSort === 'shared-desc') {
+          return b.shared - a.shared;
+        } else {
+          // Default Name Sort
+          return a.stationName.localeCompare(b.stationName, 'ko-KR', { numeric: true });
+        }
+      });
+
+      state.filteredStations = list;
+      renderList();
+    }
+
+    // Render Function
+    function renderList() {
+      const hasData = state.filteredStations.length > 0;
+
+      if (!hasData) {
+        elements.stationsGrid.innerHTML = '';
+        elements.stationsTableBody.innerHTML = '';
+        elements.emptyState.classList.remove('hidden');
+        return;
+      }
+
+      elements.emptyState.classList.add('hidden');
+
+      // Render Cards View
+      renderGridView();
+
+      // Render Table View
+      renderTableView();
+    }
+
+    // Render Grid View Cards
+    function renderGridView() {
+      elements.stationsGrid.innerHTML = state.filteredStations.map(station => {
+        const isEmpty = station.parkingBikeTotCnt === 0;
+        const progressPercentage = station.rackTotCnt > 0 
+          ? Math.min(100, Math.round((station.parkingBikeTotCnt / station.rackTotCnt) * 100)) 
+          : 0;
+
+        return `
+          <div class="station-card ${isEmpty ? 'is-empty' : ''}">
+            <div>
+              <div class="station-header">
+                <div class="station-info">
+                  <span class="station-id">${escapeHtml(station.stationId || '대여소')}</span>
+                  <h2 class="station-title">${escapeHtml(station.stationName)}</h2>
+                </div>
+                <span class="status-chip ${isEmpty ? 'empty' : 'available'}">
+                  ${isEmpty ? '대여불가 (0대)' : '대여가능'}
+                </span>
+              </div>
+
+              <div class="bike-count-area">
+                <span class="count-number">${station.parkingBikeTotCnt}</span>
+                <span class="count-unit">대 이용가능</span>
+              </div>
+
+              <!-- Progress bar -->
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill ${isEmpty ? 'empty' : 'normal'}" style="width: ${progressPercentage}%;"></div>
+              </div>
+            </div>
+
+            <div class="metrics-row">
+              <span>총 거치대: <strong>${station.rackTotCnt}대</strong></span>
+              <span>거치율: <strong>${station.shared}%</strong></span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Table View Rows
+    function renderTableView() {
+      elements.stationsTableBody.innerHTML = state.filteredStations.map(station => {
+        const isEmpty = station.parkingBikeTotCnt === 0;
+
+        return `
+          <tr class="${isEmpty ? 'is-empty-row' : ''}">
+            <td>
+              <strong>${escapeHtml(station.stationName)}</strong>
+              ${station.stationId ? `<br><small style="color:var(--text-muted);">${escapeHtml(station.stationId)}</small>` : ''}
+            </td>
+            <td><strong>${station.parkingBikeTotCnt}</strong> 대</td>
+            <td>${station.rackTotCnt} 대</td>
+            <td>${station.shared}%</td>
+            <td>
+              <span class="status-chip ${isEmpty ? 'empty' : 'available'}">
+                ${isEmpty ? '대여불가' : '대여가능'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // XSS Escape Helper
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Run on Page Load
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
