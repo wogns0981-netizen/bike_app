@@ -29,6 +29,25 @@
       --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* Dark Theme Variable Overrides */
+    [data-theme="dark"] {
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --primary-light: rgba(16, 185, 129, 0.15);
+      --danger: #f87171;
+      --danger-light: rgba(248, 113, 113, 0.15);
+      --danger-border: #7f1d1d;
+      --warning: #fbbf24;
+      --warning-light: rgba(251, 191, 36, 0.15);
+      --bg-main: #0f172a;
+      --surface: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -144,6 +163,26 @@
       box-shadow: 0 0 8px var(--danger);
     }
 
+    /* Theme Toggle Button */
+    .theme-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.45rem 0.75rem;
+      background-color: var(--bg-main);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .theme-toggle-btn:hover {
+      background-color: var(--border);
+    }
+
     .refresh-btn {
       display: inline-flex;
       align-items: center;
@@ -226,6 +265,90 @@
 
     .stat-card.empty-alert .value {
       color: var(--danger);
+    }
+
+    /* District Tabs Filter Section */
+    .district-section {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.25rem;
+    }
+
+    .district-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .district-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .district-count-info {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .district-tabs {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.35rem;
+      scrollbar-width: thin;
+    }
+
+    .district-tabs::-webkit-scrollbar {
+      height: 4px;
+    }
+    .district-tabs::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .district-btn {
+      padding: 0.35rem 0.85rem;
+      border: 1px solid var(--border);
+      background: var(--bg-main);
+      color: var(--text-muted);
+      font-size: 0.825rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .district-btn:hover {
+      color: var(--text-main);
+      border-color: var(--primary);
+    }
+
+    .district-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 6px rgba(0, 168, 107, 0.3);
+    }
+
+    .district-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.35rem;
     }
 
     /* Filter & Search Bar */
@@ -675,6 +798,12 @@
       </div>
       
       <div class="header-actions">
+        <!-- Theme Toggle Button -->
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="다크/라이트 테마 선택">
+          <span id="themeIcon">🌙</span>
+          <span id="themeText">다크</span>
+        </button>
+
         <!-- Live vs Disconnected Status Badge -->
         <div id="dataBadge" class="data-badge disconnected">
           <span class="dot"></span>
@@ -722,6 +851,20 @@
         <div class="value-group">
           <span class="value" id="statAvgShared">0%</span>
         </div>
+      </div>
+    </section>
+
+    <!-- District Selection Section (구 단위 분류 및 전체 분류) -->
+    <section class="district-section">
+      <div class="district-header">
+        <div class="district-title">
+          <span>📍</span>
+          <span>서울 자치구 분류</span>
+        </div>
+        <span id="districtCountInfo" class="district-count-info">전체 0개 구 보유</span>
+      </div>
+      <div id="districtTabs" class="district-tabs">
+        <button class="district-btn active" data-district="all">전체 구 보기</button>
       </div>
     </section>
 
@@ -814,6 +957,15 @@
 
   <!-- Inline Script Logic -->
   <script>
+    // Known 25 Districts of Seoul
+    const SEOUL_DISTRICTS = [
+      '강남구', '강동구', '강북구', '강서구', '관악구', 
+      '광진구', '구로구', '금천구', '노원구', '도봉구', 
+      '동대문구', '동작구', '마포구', '서대문구', '서초구', 
+      '성동구', '성북구', '송파구', '양천구', '영등포구', 
+      '용산구', '은평구', '종로구', '중구', '중랑구'
+    ];
+
     // Global State Application Object
     const state = {
       rawStations: [],
@@ -821,13 +973,18 @@
       isConnected: false,
       lastUpdated: null,
       currentFilter: 'all', // 'all', 'available', 'empty'
+      currentDistrict: 'all', // 'all' or district name (e.g. '마포구')
       currentSort: 'name',   // 'name', 'bikes-desc', 'bikes-asc', 'shared-desc'
       searchQuery: '',
-      currentView: 'grid'   // 'grid', 'table'
+      currentView: 'grid',   // 'grid', 'table'
+      theme: 'light'
     };
 
     // DOM Elements
     const elements = {
+      themeToggleBtn: document.getElementById('themeToggleBtn'),
+      themeIcon: document.getElementById('themeIcon'),
+      themeText: document.getElementById('themeText'),
       refreshBtn: document.getElementById('refreshBtn'),
       refreshIcon: document.getElementById('refreshIcon'),
       dataBadge: document.getElementById('dataBadge'),
@@ -838,6 +995,9 @@
       statTotalBikes: document.getElementById('statTotalBikes'),
       statEmptyStations: document.getElementById('statEmptyStations'),
       statAvgShared: document.getElementById('statAvgShared'),
+
+      districtTabs: document.getElementById('districtTabs'),
+      districtCountInfo: document.getElementById('districtCountInfo'),
 
       searchInput: document.getElementById('searchInput'),
       clearSearchBtn: document.getElementById('clearSearchBtn'),
@@ -855,12 +1015,90 @@
 
     // Initialization Function
     function init() {
+      initTheme();
       setupEventListeners();
       fetchBikeData();
     }
 
+    // Theme Logic
+    function initTheme() {
+      const savedTheme = localStorage.getItem('taarung_theme') || 
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      setTheme(savedTheme);
+    }
+
+    function setTheme(theme) {
+      state.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('taarung_theme', theme);
+
+      if (theme === 'dark') {
+        elements.themeIcon.textContent = '☀️';
+        elements.themeText.textContent = '라이트';
+      } else {
+        elements.themeIcon.textContent = '🌙';
+        elements.themeText.textContent = '다크';
+      }
+    }
+
+    // Determine District from Station Name or Number Range
+    function getDistrict(stationName) {
+      const name = stationName || '';
+      
+      // 1. Direct District match
+      for (const d of SEOUL_DISTRICTS) {
+        if (name.includes(d)) return d;
+      }
+
+      // 2. Station ID/Number mapping logic
+      const matchNum = name.match(/^(\d+)\./);
+      if (matchNum) {
+        const num = parseInt(matchNum[1], 10);
+        if (num >= 100 && num <= 199) return '마포구';
+        if (num >= 200 && num <= 299) return '영등포구';
+        if (num >= 300 && num <= 399) return '종로구';
+        if (num >= 400 && num <= 499) return '용산구';
+        if (num >= 500 && num <= 599) return '성동구';
+        if (num >= 600 && num <= 699) return '동대문구';
+        if (num >= 700 && num <= 799) return '성북구';
+        if (num >= 800 && num <= 899) return '도봉구';
+        if (num >= 900 && num <= 999) return '은평구';
+        if (num >= 1000 && num <= 1099) return '강동구';
+        if (num >= 1100 && num <= 1199) return '강서구';
+        if (num >= 1200 && num <= 1299) return '송파구';
+        if (num >= 1300 && num <= 1399) return '서초구';
+        if (num >= 1400 && num <= 1499) return '강남구';
+        if (num >= 1500 && num <= 1599) return '관악구';
+        if (num >= 1600 && num <= 1699) return '금천구';
+        if (num >= 1700 && num <= 1799) return '동작구';
+        if (num >= 1800 && num <= 1899) return '구로구';
+        if (num >= 1900 && num <= 1999) return '금천구';
+        if (num >= 2000 && num <= 2099) return '중랑구';
+        if (num >= 2100 && num <= 2199) return '관악구';
+        if (num >= 2200 && num <= 2299) return '서초구';
+        if (num >= 2300 && num <= 2399) return '강남구';
+      }
+
+      // 3. Keyword matching for famous locations
+      if (/망원|합정|상암|홍대|연남/.test(name)) return '마포구';
+      if (/여의도|당산|문래|영등포/.test(name)) return '영등포구';
+      if (/광화문|종각|혜화|경복궁|안국/.test(name)) return '종로구';
+      if (/명동|을지로|시청|충무로/.test(name)) return '중구';
+      if (/강남|역삼|삼성|청담|논현/.test(name)) return '강남구';
+      if (/교대|서초|방배|고속터미널/.test(name)) return '서초구';
+      if (/잠실|석촌|방이|가락|문정/.test(name)) return '송파구';
+
+      return '기타';
+    }
+
     // Setup Event Listeners
     function setupEventListeners() {
+      // Theme Toggle Button
+      elements.themeToggleBtn.addEventListener('click', () => {
+        const nextTheme = state.theme === 'light' ? 'dark' : 'light';
+        setTheme(nextTheme);
+      });
+
       // Refresh Button
       elements.refreshBtn.addEventListener('click', () => {
         fetchBikeData();
@@ -918,6 +1156,7 @@
       elements.resetFiltersBtn.addEventListener('click', () => {
         state.searchQuery = '';
         state.currentFilter = 'all';
+        state.currentDistrict = 'all';
         state.currentSort = 'name';
         
         elements.searchInput.value = '';
@@ -928,13 +1167,13 @@
           b.classList.toggle('active', b.getAttribute('data-filter') === 'all');
         });
 
+        renderDistrictTabs();
         applyFiltersAndRender();
       });
     }
 
     // Main Data Fetching Logic (Retains last screen on error & sets '연결 끊김')
     async function fetchBikeData() {
-      // Start spin animation
       elements.refreshIcon.classList.add('spin');
       elements.refreshBtn.disabled = true;
 
@@ -945,22 +1184,19 @@
         }
         const rawData = await response.json();
         
-        // Parse and update state only on success
         state.rawStations = parseResponseData(rawData);
         state.isConnected = true;
         state.lastUpdated = new Date();
       } catch (error) {
         console.warn('API 연결 실패. 마지막 데이터를 유지합니다.', error);
         state.isConnected = false;
-        // Notice: state.rawStations is NOT cleared or changed, keeping previous screen intact!
       }
 
-      // Update Header UI & Badge
       updateBadgeUI();
       updateDashboardStats();
+      renderDistrictTabs();
       applyFiltersAndRender();
 
-      // Stop spin animation
       setTimeout(() => {
         elements.refreshIcon.classList.remove('spin');
         elements.refreshBtn.disabled = false;
@@ -981,16 +1217,61 @@
         const parkingBikeTotCnt = parseInt(item.parkingBikeTotCnt, 10) || 0;
         const rackTotCnt = parseInt(item.rackTotCnt, 10) || 0;
         const shared = parseInt(item.shared, 10) || 0;
+        const stationName = item.stationName || '미지정 대여소';
 
         return {
           stationId: item.stationId || '',
-          stationName: item.stationName || '미지정 대여소',
+          stationName: stationName,
+          district: getDistrict(stationName),
           parkingBikeTotCnt: parkingBikeTotCnt,
           rackTotCnt: rackTotCnt,
           shared: shared,
           stationLatitude: item.stationLatitude || null,
           stationLongitude: item.stationLongitude || null
         };
+      });
+    }
+
+    // Render Dynamic District Filter Buttons
+    function renderDistrictTabs() {
+      const districtCounts = {};
+      state.rawStations.forEach(s => {
+        districtCounts[s.district] = (districtCounts[s.district] || 0) + 1;
+      });
+
+      const districtList = Object.keys(districtCounts).sort((a, b) => {
+        if (a === '기타') return 1;
+        if (b === '기타') return -1;
+        return a.localeCompare(b, 'ko-KR');
+      });
+
+      elements.districtCountInfo.textContent = `총 ${districtList.length}개 자치구 데이터`;
+
+      let html = `
+        <button class="district-btn ${state.currentDistrict === 'all' ? 'active' : ''}" data-district="all">
+          전체 (${state.rawStations.length})
+        </button>
+      `;
+
+      districtList.forEach(d => {
+        const isActive = state.currentDistrict === d;
+        html += `
+          <button class="district-btn ${isActive ? 'active' : ''}" data-district="${d}">
+            ${d} (${districtCounts[d]})
+          </button>
+        `;
+      });
+
+      elements.districtTabs.innerHTML = html;
+
+      // Attach click handlers to district buttons
+      elements.districtTabs.querySelectorAll('.district-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.currentDistrict = btn.getAttribute('data-district');
+          elements.districtTabs.querySelectorAll('.district-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          applyFiltersAndRender();
+        });
       });
     }
 
@@ -1047,20 +1328,25 @@
     function applyFiltersAndRender() {
       let list = [...state.rawStations];
 
-      // 1. Text Search Filter
+      // 1. District Filter
+      if (state.currentDistrict !== 'all') {
+        list = list.filter(item => item.district === state.currentDistrict);
+      }
+
+      // 2. Text Search Filter
       if (state.searchQuery) {
         const query = state.searchQuery.toLowerCase();
         list = list.filter(item => item.stationName.toLowerCase().includes(query));
       }
 
-      // 2. Tab Filter
+      // 3. Tab Filter
       if (state.currentFilter === 'available') {
         list = list.filter(item => item.parkingBikeTotCnt > 0);
       } else if (state.currentFilter === 'empty') {
         list = list.filter(item => item.parkingBikeTotCnt === 0);
       }
 
-      // 3. Sorting Logic
+      // 4. Sorting Logic
       list.sort((a, b) => {
         if (state.currentSort === 'bikes-desc') {
           return b.parkingBikeTotCnt - a.parkingBikeTotCnt;
@@ -1069,7 +1355,6 @@
         } else if (state.currentSort === 'shared-desc') {
           return b.shared - a.shared;
         } else {
-          // Default Name Sort
           return a.stationName.localeCompare(b.stationName, 'ko-KR', { numeric: true });
         }
       });
@@ -1090,15 +1375,11 @@
       }
 
       elements.emptyState.classList.add('hidden');
-
-      // Render Cards View
       renderGridView();
-
-      // Render Table View
       renderTableView();
     }
 
-    // Render Grid View Cards with Bike Emojis
+    // Render Grid View Cards with Bike Emojis & District Tag
     function renderGridView() {
       elements.stationsGrid.innerHTML = state.filteredStations.map(station => {
         const isEmpty = station.parkingBikeTotCnt === 0;
@@ -1106,7 +1387,6 @@
           ? Math.min(100, Math.round((station.parkingBikeTotCnt / station.rackTotCnt) * 100)) 
           : 0;
 
-        // Bike Emoji Display Logic
         let bikeEmojiDisplay = '';
         if (isEmpty) {
           bikeEmojiDisplay = '<span style="color: var(--danger); font-size: 0.85rem; font-weight: 700;">🚫 이용 가능한 자전거가 없습니다</span>';
@@ -1123,6 +1403,7 @@
         return `
           <div class="station-card ${isEmpty ? 'is-empty' : ''}">
             <div>
+              <span class="district-tag">📍 ${escapeHtml(station.district)}</span>
               <div class="station-header">
                 <div class="station-info">
                   <span class="station-id">${escapeHtml(station.stationId || '대여소')}</span>
@@ -1142,7 +1423,6 @@
                 ${bikeEmojiDisplay}
               </div>
 
-              <!-- Progress bar -->
               <div class="progress-bar-bg" style="margin-top: 0.75rem;">
                 <div class="progress-bar-fill ${isEmpty ? 'empty' : 'normal'}" style="width: ${progressPercentage}%;"></div>
               </div>
@@ -1157,7 +1437,7 @@
       }).join('');
     }
 
-    // Render Table View Rows with Bike Emojis
+    // Render Table View Rows with District Column
     function renderTableView() {
       elements.stationsTableBody.innerHTML = state.filteredStations.map(station => {
         const isEmpty = station.parkingBikeTotCnt === 0;
@@ -1168,6 +1448,7 @@
         return `
           <tr class="${isEmpty ? 'is-empty-row' : ''}">
             <td>
+              <span class="district-tag" style="margin-bottom:0.2rem;">📍 ${escapeHtml(station.district)}</span><br>
               <strong>${escapeHtml(station.stationName)}</strong>
               ${station.stationId ? `<br><small style="color:var(--text-muted);">${escapeHtml(station.stationId)}</small>` : ''}
             </td>
