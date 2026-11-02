@@ -122,10 +122,10 @@
       border: 1px solid rgba(0, 168, 107, 0.3);
     }
 
-    .data-badge.sample {
-      background-color: var(--warning-light);
-      color: #b45309;
-      border: 1px solid rgba(245, 158, 11, 0.4);
+    .data-badge.disconnected {
+      background-color: var(--danger-light);
+      color: var(--danger);
+      border: 1px solid var(--danger-border);
     }
 
     .data-badge .dot {
@@ -139,8 +139,9 @@
       box-shadow: 0 0 8px var(--primary);
     }
 
-    .data-badge.sample .dot {
-      background-color: var(--warning);
+    .data-badge.disconnected .dot {
+      background-color: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
     }
 
     .refresh-btn {
@@ -481,6 +482,18 @@
       color: var(--text-muted);
     }
 
+    /* Bike Emoji Visual Representation */
+    .bike-emoji-container {
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      word-break: break-all;
+      margin-top: 0.25rem;
+      min-height: 1.6rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     /* Progress & Metrics */
     .progress-bar-bg {
       width: 100%;
@@ -662,10 +675,10 @@
       </div>
       
       <div class="header-actions">
-        <!-- Live vs Sample Data Badge -->
-        <div id="dataBadge" class="data-badge sample">
+        <!-- Live vs Disconnected Status Badge -->
+        <div id="dataBadge" class="data-badge disconnected">
           <span class="dot"></span>
-          <span id="badgeText">샘플 데이터</span>
+          <span id="badgeText">연결 끊김</span>
         </div>
 
         <!-- Refresh Button -->
@@ -801,71 +814,11 @@
 
   <!-- Inline Script Logic -->
   <script>
-    // System Sample Data (Fallback when API fetch fails)
-    const SAMPLE_DATA = [
-      {
-        "rentBikeStatus": {
-          "list_total_count": 5,
-          "RESULT": {
-            "CODE": "INFO-000",
-            "MESSAGE": "정상 처리되었습니다."
-          },
-          "row": [
-            {
-              "rackTotCnt": "15",
-              "stationName": "102. 망원역 1번출구 앞",
-              "parkingBikeTotCnt": "11",
-              "shared": "73",
-              "stationLatitude": "37.55564880",
-              "stationLongitude": "126.91062927",
-              "stationId": "ST-4"
-            },
-            {
-              "rackTotCnt": "14",
-              "stationName": "103. 망원역 2번출구 앞",
-              "parkingBikeTotCnt": "12",
-              "shared": "86",
-              "stationLatitude": "37.55495071",
-              "stationLongitude": "126.91083527",
-              "stationId": "ST-5"
-            },
-            {
-              "rackTotCnt": "13",
-              "stationName": "104. 합정역 1번출구 앞",
-              "parkingBikeTotCnt": "16",
-              "shared": "123",
-              "stationLatitude": "37.55073929",
-              "stationLongitude": "126.91508484",
-              "stationId": "ST-6"
-            },
-            {
-              "rackTotCnt": "5",
-              "stationName": "105. 합정역 5번출구 앞",
-              "parkingBikeTotCnt": "0",
-              "shared": "0",
-              "stationLatitude": "37.55000687",
-              "stationLongitude": "126.91482544",
-              "stationId": "ST-7"
-            },
-            {
-              "rackTotCnt": "12",
-              "stationName": "106. 합정역 7번출구 앞",
-              "parkingBikeTotCnt": "1",
-              "shared": "8",
-              "stationLatitude": "37.54864502",
-              "stationLongitude": "126.91282654",
-              "stationId": "ST-8"
-            }
-          ]
-        }
-      }
-    ];
-
     // Global State Application Object
     const state = {
       rawStations: [],
       filteredStations: [],
-      isSample: false,
+      isConnected: false,
       lastUpdated: null,
       currentFilter: 'all', // 'all', 'available', 'empty'
       currentSort: 'name',   // 'name', 'bikes-desc', 'bikes-asc', 'shared-desc'
@@ -979,31 +932,28 @@
       });
     }
 
-    // Main Data Fetching Logic with Fallback Handling
+    // Main Data Fetching Logic (Retains last screen on error & sets '연결 끊김')
     async function fetchBikeData() {
       // Start spin animation
       elements.refreshIcon.classList.add('spin');
       elements.refreshBtn.disabled = true;
-
-      let rawData = null;
-      let isSample = false;
 
       try {
         const response = await fetch('/api/bike');
         if (!response.ok) {
           throw new Error(`HTTP Error: ${response.status}`);
         }
-        rawData = await response.json();
+        const rawData = await response.json();
+        
+        // Parse and update state only on success
+        state.rawStations = parseResponseData(rawData);
+        state.isConnected = true;
+        state.lastUpdated = new Date();
       } catch (error) {
-        console.warn('API 호출 실패. 샘플 데이터로 전환합니다.', error);
-        rawData = SAMPLE_DATA;
-        isSample = true;
+        console.warn('API 연결 실패. 마지막 데이터를 유지합니다.', error);
+        state.isConnected = false;
+        // Notice: state.rawStations is NOT cleared or changed, keeping previous screen intact!
       }
-
-      // Process and Parse JSON data
-      state.isSample = isSample;
-      state.rawStations = parseResponseData(rawData);
-      state.lastUpdated = new Date();
 
       // Update Header UI & Badge
       updateBadgeUI();
@@ -1021,7 +971,6 @@
     function parseResponseData(data) {
       let rowArray = [];
 
-      // Flexible checking for API or Sample format
       if (Array.isArray(data) && data[0] && data[0].rentBikeStatus && Array.isArray(data[0].rentBikeStatus.row)) {
         rowArray = data[0].rentBikeStatus.row;
       } else if (data && data.rentBikeStatus && Array.isArray(data.rentBikeStatus.row)) {
@@ -1047,12 +996,12 @@
 
     // Update Header Status Badge & Time
     function updateBadgeUI() {
-      if (state.isSample) {
-        elements.dataBadge.className = 'data-badge sample';
-        elements.badgeText.textContent = '샘플 데이터';
-      } else {
+      if (state.isConnected) {
         elements.dataBadge.className = 'data-badge live';
-        elements.badgeText.textContent = '실시간 API';
+        elements.badgeText.textContent = '연결 완료';
+      } else {
+        elements.dataBadge.className = 'data-badge disconnected';
+        elements.badgeText.textContent = '연결 끊김';
       }
 
       const formattedTime = formatDate(state.lastUpdated);
@@ -1149,13 +1098,27 @@
       renderTableView();
     }
 
-    // Render Grid View Cards
+    // Render Grid View Cards with Bike Emojis
     function renderGridView() {
       elements.stationsGrid.innerHTML = state.filteredStations.map(station => {
         const isEmpty = station.parkingBikeTotCnt === 0;
         const progressPercentage = station.rackTotCnt > 0 
           ? Math.min(100, Math.round((station.parkingBikeTotCnt / station.rackTotCnt) * 100)) 
           : 0;
+
+        // Bike Emoji Display Logic
+        let bikeEmojiDisplay = '';
+        if (isEmpty) {
+          bikeEmojiDisplay = '<span style="color: var(--danger); font-size: 0.85rem; font-weight: 700;">🚫 이용 가능한 자전거가 없습니다</span>';
+        } else {
+          const count = station.parkingBikeTotCnt;
+          const maxDisplay = 15;
+          if (count <= maxDisplay) {
+            bikeEmojiDisplay = '🚲'.repeat(count);
+          } else {
+            bikeEmojiDisplay = '🚲'.repeat(maxDisplay) + ` <span style="font-size: 0.85rem; font-weight: bold; color: var(--primary);">(+${count - maxDisplay})</span>`;
+          }
+        }
 
         return `
           <div class="station-card ${isEmpty ? 'is-empty' : ''}">
@@ -1175,8 +1138,12 @@
                 <span class="count-unit">대 이용가능</span>
               </div>
 
+              <div class="bike-emoji-container">
+                ${bikeEmojiDisplay}
+              </div>
+
               <!-- Progress bar -->
-              <div class="progress-bar-bg">
+              <div class="progress-bar-bg" style="margin-top: 0.75rem;">
                 <div class="progress-bar-fill ${isEmpty ? 'empty' : 'normal'}" style="width: ${progressPercentage}%;"></div>
               </div>
             </div>
@@ -1190,10 +1157,13 @@
       }).join('');
     }
 
-    // Render Table View Rows
+    // Render Table View Rows with Bike Emojis
     function renderTableView() {
       elements.stationsTableBody.innerHTML = state.filteredStations.map(station => {
         const isEmpty = station.parkingBikeTotCnt === 0;
+        let bikeEmojiStr = isEmpty 
+          ? '🚫' 
+          : ('🚲'.repeat(Math.min(station.parkingBikeTotCnt, 5)) + (station.parkingBikeTotCnt > 5 ? '…' : ''));
 
         return `
           <tr class="${isEmpty ? 'is-empty-row' : ''}">
@@ -1201,7 +1171,10 @@
               <strong>${escapeHtml(station.stationName)}</strong>
               ${station.stationId ? `<br><small style="color:var(--text-muted);">${escapeHtml(station.stationId)}</small>` : ''}
             </td>
-            <td><strong>${station.parkingBikeTotCnt}</strong> 대</td>
+            <td>
+              <strong>${station.parkingBikeTotCnt}</strong> 대 
+              <span style="margin-left: 6px; font-size: 1rem;">${bikeEmojiStr}</span>
+            </td>
             <td>${station.rackTotCnt} 대</td>
             <td>${station.shared}%</td>
             <td>
